@@ -26,6 +26,32 @@ def plot_seg_result(segments, criterion = 'default'):
         
     plt.title(f"Segments obtained with {criterion} criterion") 
     plt.show()    
+    
+    
+def display_concrete_primitives(keypoints, kdx, new_keypoints, primitives_start_end_ind):
+       
+    nb_frames = len(keypoints[kdx])
+    
+    x_ref = []
+    y_ref = []
+    x_prim = []
+    y_prim = []
+    for i in range(nb_frames) :
+       x_ref.append(keypoints[kdx][i][0])
+       y_ref.append(keypoints[kdx][i][1])
+       x_prim.append(new_keypoints[kdx][i][0])
+       y_prim.append(new_keypoints[kdx][i][1])
+    
+    plt.figure()                
+    plt.subplot(211)             
+    plt.plot(x_ref,y_ref)
+    plt.subplot(212)             
+    for i in range(0,len(primitives_start_end_ind),2) :
+        plt.plot(x_prim[primitives_start_end_ind[i]:primitives_start_end_ind[i+1]], 
+                 y_prim[primitives_start_end_ind[i]:primitives_start_end_ind[i+1]], 
+                 color=uniqueish_color())
+  
+    plt.show()   
         
 
 def start_mid_end_display(abs_prim, title = '') :

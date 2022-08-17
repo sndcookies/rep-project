@@ -63,6 +63,29 @@ def generate_signal_manually():
     synthetic_signal = np.concatenate([block1, block2, block3, block4, block5, block6, block7, block8])    
     for i in range(2):
         synthetic_signal = np.concatenate([synthetic_signal,synthetic_signal])
+        nb_pts = len(synthetic_signal)
+        time_vector = np.linspace(0, nb_pts-1, nb_pts)
         
-        return synthetic_signal
+        return synthetic_signal, time_vector
     
+# %% Triangle synthetic traj for segmentation testing
+    
+def synthetic_traj(traj_size):
+
+    traj = np.zeros((2,traj_size))
+    
+    for i in range (traj_size//2):
+        traj[0,i] = i
+        traj[1,i] = i
+    
+    for i in range (traj_size//2, traj_size ):
+        traj[0,i] = i
+        traj[1,i] = traj_size - i - 1
+    
+    traj = traj.astype(int) 
+    traj = np.concatenate((traj[:,0:-1],traj),axis=1)
+    traj[0, traj_size -1 :2  * traj_size] = traj[0, traj_size -1  :2   * traj_size] + traj_size -1
+        
+    
+    return traj
+
