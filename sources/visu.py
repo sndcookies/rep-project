@@ -2,24 +2,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-
-plt.close('all')
-
 def uniqueish_color():  
     """There're better ways to generate unique colors, but this isn't awful."""
     return plt.cm.gist_ncar(np.random.random())
 
-def plot_traj(traj):
-    
+
+def plot_traj(traj):    
     plt.figure
     plt.plot(traj[0,:], traj[1,:])
     plt.show()
     
-def scatter_traj(traj):
     
+def scatter_traj(traj):    
     plt.figure
     plt.scatter(traj[0,:], traj[1,:])
     plt.show()
+    
     
 def plot_seg_result(segments, criterion = 'default'):
     plt.figure()
@@ -29,6 +27,65 @@ def plot_seg_result(segments, criterion = 'default'):
     plt.title(f"Segments obtained with {criterion} criterion") 
     plt.show()    
         
+
+def start_mid_end_display(abs_prim, title = '') :
+   
+    nb_prim = len(abs_prim)
+    x = []
+    y = []
+    for j in range(nb_prim) :
+        x.append(abs_prim[j]["start"][0])
+        y.append(abs_prim[j]["start"][1])
+        x.append(abs_prim[j]["mid"][0])
+        y.append(abs_prim[j]["mid"][1])
+        x.append(abs_prim[j]["end"][0])
+        y.append(abs_prim[j]["end"][1])
+   
+    for i in range(0,len(x),3) :
+        plt.scatter(x[i:i+3], y[i:i+3], color=uniqueish_color())
+ 
+    plt.title(title)
+    plt.show()
+
+
+def matrix_display(mat):
+    # Used to display matrices such as sim_mat and patterns
+    plt.figure()        
+    plt.imshow(mat, interpolation='nearest')
+    plt.show()  
+
         
+def curr_pattern_display(window_size, all_patterns_dict, pattern_index, concrete_primitives): 
+# Displays all windows from the pattern
+# The primitives of each window must be same color 
+    pattern = all_patterns_dict[f'{window_size}'][pattern_index]
+    true_window_size = window_size + 1
+    x_plot = []
+    y_plot = []    
+    plt.figure()
+    for window_start in pattern:
+        x_temp = []
+        y_temp = []
+        for prim in range(window_start, window_start + true_window_size):
+            x_temp = x_temp + (list(list(zip(*concrete_primitives[prim]))[0]))                      # Coordinates forming every primitive in current window
+            y_temp = y_temp + (list(list(zip(*concrete_primitives[prim]))[1]))           
+        x_plot.append(x_temp)
+        y_plot.append(y_temp)   
+    nb_rows = len(x_plot)        
+    for i in range(nb_rows): 
+        plt.plot(x_plot[i], y_plot[i], color=uniqueish_color())
+        plt.title(f"Window size = {true_window_size} | Pattern = {pattern_index} " )           
+    plt.show()
+    
+
+def repetition_display(all_patterns_dict):
+# Displays all repetitions 
+    nb_window_sizes = len(all_patterns_dict)
+    for window_size in range (nb_window_sizes):
+        nb_patterns = len(all_patterns_dict[f'{window_size}'])
+        for pattern_index in range (nb_patterns):
+            curr_pattern_display(window_size, all_patterns_dict, pattern_index)
+            
         
+                    
     
