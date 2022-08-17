@@ -1,5 +1,5 @@
 import criteria
-
+import numpy as np
 
 
 def test_criteria(traj, start, end, attribute, parameters):                        # No need for parameters to be a dict right ?
@@ -43,7 +43,6 @@ def bin_search(traj, start, end):
     return high
 
 def segmentation(traj):
-    
     # Segments trajectory
     
     n = len(traj[0])
@@ -52,11 +51,19 @@ def segmentation(traj):
     
     while  (s < n-1):
         a = 1
+
         while (s + a < n) and test_criteria(traj, s, s + a, 'heading', [0.5]):
-            a = 2 * a  
+            a = 2 * a   
+            
         j = bin_search(traj, s, min( s + a, n-1))
-        seg_pts.append(j)
-        
+        seg_pts.append(j)      
         s = j
-             
-    return seg_pts
+        
+    segments = [] 
+    segments.append(traj[:,0:seg_pts[0]])
+    
+    for i in range (len(seg_pts) - 1) :
+        segments.append(traj[:,seg_pts[i]:seg_pts[i+1]])
+    segments[-1]= np.concatenate((segments[-1],np.reshape(traj[:,-1],(2,1))),axis=1)                   # Manually adding missing last point    
+            
+    return segments,seg_pts

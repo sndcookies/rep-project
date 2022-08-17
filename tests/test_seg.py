@@ -3,7 +3,7 @@ import sys
 # caution: path[0] is reserved for script path (or '' in REPL)
 sys.path.insert(1, '../sources')
 import seg_traj
-import vizu
+import visu
 
 
 def synthetic_traj(traj_size):
@@ -26,9 +26,8 @@ def synthetic_traj(traj_size):
     return traj
 
 
-def test_synthetic():
-    traj = synthetic_traj(11)
-    cutting_points = seg_traj.segmentation(traj)
-    print(cutting_points)
-    
-test_synthetic()
+traj_size = 11
+traj = synthetic_traj(traj_size)
+[segments,seg_pts] = seg_traj.segmentation(traj)
+print(seg_pts)  
+visu.plot_seg_result(segments,'heading')
