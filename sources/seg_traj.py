@@ -1,6 +1,6 @@
-import criteria
 import numpy as np
-
+import criteria
+import lglobalvars
 
 def test_criteria(traj, start, end, attribute, parameters):                        # No need for parameters to be a dict right ?
     # For given trajectory, start and end indices, creates a subtrajectory
@@ -67,3 +67,33 @@ def segmentation(traj):
     segments[-1]= np.concatenate((segments[-1],np.reshape(traj[:,-1],(2,1))),axis=1)                   # Manually adding missing last point    
             
     return segments,seg_pts
+
+
+# %% Computing concrete primitives 
+
+''' type_fit = "dp_all"
+synt_args = {"points_pp": 1, "stat_thres": 0.2, \
+            "span_thres": 10, "r_penalty": True, \
+            "no_acc": False, "REG": -1, 'cores': 1, \
+            "window": 25}
+lglobalvars.synt_args = synt_args
+
+
+
+for j in range(1) :
+    keypoint = {0 : keypoints[j]}
+    
+    all_prim = lkeypoints.generate_all_primitives(keypoint, type_fit, synt_args)
+    print(all_prim)
+    # display_funky_primitives(keypoints, 0, base_prim)
+    new_keypoints, color_codes = lkeypoints.trace_funky_primitives(all_prim)
+        
+        
+    # color_codes into better better color_codes
+color_ind = 0
+primitives_start_end_ind = [0]
+for i in range (1,len(color_codes)):
+    if color_codes[i] != color_codes[i-1]:
+        primitives_start_end_ind.append(i)
+        primitives_start_end_ind.append(i)
+primitives_start_end_ind.append(len(color_codes))'''

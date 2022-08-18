@@ -1,6 +1,18 @@
 import numpy as np
 
 
+
+def add_noise(signal, a = 0, b = .1):
+    noise = np.random.normal(a, b, signal.shape)
+    return signal + noise
+
+
+def sinusoid(freq = 2, amp = 2, start = 0, stop = 5, nb_samples = 1000):
+    time = np.linspace(0, 5, 1000)    
+    return amp*np.sin(2*np.pi*freq*time), time
+
+
+
 # %% Round block
 
 def create_round_block(amp, freq = 2/9, initial_nb_pts = 50, end = 5, offset1 = 0, offset2 = 0):
@@ -17,12 +29,12 @@ def create_round_block(amp, freq = 2/9, initial_nb_pts = 50, end = 5, offset1 = 
 
 # %% Line block
 
-def create_line_block(a, b, initial_nb_pts = 50, end = 5): 
+def create_line_block(start, stop, nb_samples, a, b): 
     
-    time = time = np.linspace(0, end-1, end)  
+    time = np.linspace(start, stop, nb_samples, True)  
     line_block = a * time + b
      
-    return line_block
+    return line_block, time
 
 
 # %% Build signal blocks
@@ -70,7 +82,7 @@ def generate_signal_manually():
     
 # %% Triangle synthetic traj for segmentation testing
     
-def synthetic_traj(traj_size):
+def triangle(traj_size):
 
     traj = np.zeros((2,traj_size))
     

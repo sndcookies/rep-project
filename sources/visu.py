@@ -13,18 +13,41 @@ def plot_traj(traj):
     plt.show()
     
     
+def plot_synthetic(signal, time, title = '', close_all = 0):
+    if close_all:
+        plt.close('all')   
+    plt.figure
+    plt.plot(time, signal)
+    plt.title(title)
+    plt.ylim([min(signal) - 10 , max(signal) + 10])
+    plt.show()
+    
+    
 def scatter_traj(traj):    
     plt.figure
     plt.scatter(traj[0,:], traj[1,:])
     plt.show()
     
     
-def plot_seg_result(segments, criterion = 'default'):
+def plot_seg_result(segments, seg_pts, criterion = 'default'):
     plt.figure()
     for i in range (len(segments)):
         plt.plot(segments[i][0,:], segments[i][1,:], color=uniqueish_color())
         
-    plt.title(f"Segments obtained with {criterion} criterion") 
+    
+    flatten_list = list(np.concatenate(segments, axis =1). flat )
+    nb_elem = len(flatten_list)
+    x_list = flatten_list[0:int(nb_elem/2)]
+    y_list = flatten_list[int(nb_elem/2):int(nb_elem)]
+    max_y = max(y_list)
+    min_y = min(y_list)    
+    for i in seg_pts:        
+        plt.annotate('seg point', xy =(i, y_list[i]),
+                 xytext =(i, y_list[i]),
+                 arrowprops = dict(facecolor ='black',
+                                   shrink = 4), )
+    plt.ylim([min_y -5 , max_y + 5])
+    plt.title(f"Segments obtained with {criterion} criterion")
     plt.show()    
     
     
