@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt   
 import numpy as np
+import criteria
+from numpy.polynomial.polynomial import polyfit
 
 
 def uniqueish_color():  
@@ -13,11 +15,11 @@ def plot_traj(traj):
     plt.show()
     
     
-def plot_synthetic(signal, time, title = '', close_all = 0):
+def plot_synthetic(time, signal, title = '', close_all = 0):
     if close_all:
         plt.close('all')   
     plt.figure
-    plt.plot(time, signal)
+    plt.scatter(time, signal)
     plt.title(title)
     plt.ylim([min(signal) - 10 , max(signal) + 10])
     plt.show()
@@ -32,8 +34,7 @@ def scatter_traj(traj):
 def plot_seg_result(segments, seg_pts, criterion = 'default'):
     plt.figure()
     for i in range (len(segments)):
-        plt.plot(segments[i][0,:], segments[i][1,:], color=uniqueish_color())
-        
+        plt.scatter(segments[i][0,:], segments[i][1,:], color=uniqueish_color())  
     
     flatten_list = list(np.concatenate(segments, axis =1). flat )
     nb_elem = len(flatten_list)
@@ -41,41 +42,15 @@ def plot_seg_result(segments, seg_pts, criterion = 'default'):
     y_list = flatten_list[int(nb_elem/2):int(nb_elem)]
     max_y = max(y_list)
     min_y = min(y_list)    
-    for i in seg_pts:        
-        plt.annotate('seg point', xy =(i, y_list[i]),
-                 xytext =(i, y_list[i]),
+    for i in seg_pts:    
+        plt.annotate('seg point', xy =(x_list[i], y_list[i]),
+                 xytext =(x_list[i], y_list[i]),
                  arrowprops = dict(facecolor ='black',
                                    shrink = 4), )
     plt.ylim([min_y -5 , max_y + 5])
     plt.title(f"Segments obtained with {criterion} criterion")
     plt.show()    
-    
-    
-def display_concrete_primitives(keypoints, kdx, new_keypoints, primitives_start_end_ind):
-       
-    nb_frames = len(keypoints[kdx])
-    
-    x_ref = []
-    y_ref = []
-    x_prim = []
-    y_prim = []
-    for i in range(nb_frames) :
-       x_ref.append(keypoints[kdx][i][0])
-       y_ref.append(keypoints[kdx][i][1])
-       x_prim.append(new_keypoints[kdx][i][0])
-       y_prim.append(new_keypoints[kdx][i][1])
-    
-    plt.figure()                
-    plt.subplot(211)             
-    plt.plot(x_ref,y_ref)
-    plt.subplot(212)             
-    for i in range(0,len(primitives_start_end_ind),2) :
-        plt.plot(x_prim[primitives_start_end_ind[i]:primitives_start_end_ind[i+1]], 
-                 y_prim[primitives_start_end_ind[i]:primitives_start_end_ind[i+1]], 
-                 color=uniqueish_color())
-  
-    plt.show()   
-        
+            
 
 def start_mid_end_display(abs_prim, title = '') :
    
@@ -98,6 +73,7 @@ def start_mid_end_display(abs_prim, title = '') :
 
 
 def matrix_display(mat):
+    
     # Used to display matrices such as sim_mat and patterns
     plt.figure()        
     plt.imshow(mat, interpolation='nearest')
@@ -105,6 +81,7 @@ def matrix_display(mat):
 
         
 def curr_pattern_display(window_size, all_patterns_dict, pattern_index, concrete_primitives): 
+    
 # Displays all windows from the pattern
 # The primitives of each window must be same color 
     pattern = all_patterns_dict[f'{window_size}'][pattern_index]
@@ -136,5 +113,52 @@ def repetition_display(all_patterns_dict):
             curr_pattern_display(window_size, all_patterns_dict, pattern_index)
             
         
-                    
+def display_fitted_line(segments):
+    
+    plt.figure()
+    for prim_id in range (len(segments)):   
+        x = segments[prim_id][0]
+        y = segments[prim_id][1]
+        results = polyfit(x, y, 1, full= True)
+        b = results[0][0]
+        a = results[0][1] 
+        x_fitted = x * a + b        
+        plt.plot(x, x_fitted, color=uniqueish_color())
+    plt.show()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                        
     
