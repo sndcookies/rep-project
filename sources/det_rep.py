@@ -4,11 +4,7 @@ import copy
 
 # %% Start-mid-end representation
 
-# 1) trace_prim gives keypoints per single concrete primitive
-
-
-def create_start_end_rep(segments):
-    
+def create_start_end_rep(segments):    
     start_end_rep = {}
     
     for prim_id in range (len(segments)):   
@@ -35,11 +31,9 @@ def create_start_end_rep(segments):
         y = y - y[0]
     
         # Store start, mid and end points
-        start_end_rep[prim_id] = {}
-    
+        start_end_rep[prim_id] = {}    
         start = ( x[0] , y[0] )
-        end = ( x[-1] , y[-1] )
-    
+        end = ( x[-1] , y[-1] )   
         start_end_rep[prim_id]['start'] = start
         start_end_rep[prim_id]['end'] = end
         
