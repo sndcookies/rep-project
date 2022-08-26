@@ -2,14 +2,14 @@ import numpy as np
 import copy
 
 
-# %% Start-mid-end representation
+# %% Start-end representation
 
 def create_start_end_rep(segments):    
     start_end_rep = {}
     
     for prim_id in range (len(segments)):   
-        x = segments[prim_id][0]
-        y = segments[prim_id][1]    
+        x = [segments[prim_id][0][0], segments[prim_id][0][-1]]
+        y = [segments[prim_id][1][0], segments[prim_id][1][-1]] 
     
         # Normalization
         max_x = np.max(x)
@@ -37,7 +37,7 @@ def create_start_end_rep(segments):
         start_end_rep[prim_id]['start'] = start
         start_end_rep[prim_id]['end'] = end
         
-    return start_end_rep
+    return start_end_rep, len(start_end_rep)
 
 
 
@@ -66,7 +66,7 @@ def clustering_wrt_end_pts(start_end_rep):
             
         if  y_direction + x_direction != '':
             direction_dict[ y_direction + x_direction ].append(prim_id)            
-        return direction_dict
+    return direction_dict
   
   
   
@@ -94,7 +94,7 @@ def similarity(sim_mat, w1_start, w2_start, window_size):
     return sim
 
             
-def repetition_detection(sim_mat, nb_primitives, window_size_max):
+def repetition_detection(sim_mat, nb_primitives, window_size_max = 10):
     # Uses similarity matrix in order to extablish repetition detection
     # by comparing windows for each window size    
     all_reps = []    
@@ -107,15 +107,67 @@ def repetition_detection(sim_mat, nb_primitives, window_size_max):
         all_reps.append(reps_for_curr_window_size)          
     return all_reps 
               
+# %% Create pattern dictionary
+
+def fetch_primitives(rep_matrix) :
+    patterns_list_curr_window_size = []    
+    nb_rows, nb_cols = rep_matrix.shape
+    for i in range(nb_rows):
+        innerlist = []
+        for j in range(nb_cols):
+            if rep_matrix[i][j]:
+                innerlist.append(j)
+        patterns_list_curr_window_size.append(innerlist)
+    return patterns_list_curr_window_size
+    
+
+def patterns_curr_window_size(rep_matrix):
+    # Compares rows of rep_matrix, if they are equal, it means there's a new repetition pattern.
+    # Delete all redundant patterns, and rows that contain 0 or 1 window patterns. 
+    # Returns resulting list, containing all patterns for one window size.
+    
+    nb_rows = len(rep_matrix)
+    i = 0
+    while i < nb_rows :                                                                      # Loop through i rows
+        curr_row = np.array(rep_matrix[i])       
+                                                                      
+        if np.sum(curr_row > 0) > 1 :                                                        # If i row is not empty or composed of a single occurence, process :          
+            j = i + 1
+            while j < nb_rows :                                                              # Loop through j rows
+                if not (np.mean(abs(rep_matrix[j] - rep_matrix[i]))):                        # If i row and j row contain the same pattern
+                    rep_matrix = np.delete(rep_matrix, j, 0)                                 # Delete repeting row (j row)                    
+                    j = j - 1
+                    nb_rows = len(rep_matrix)                                                                         
+                j = j + 1 
+            i = i + 1
+        
+        else :                                                                               # Else delete row 
+            rep_matrix = np.delete(rep_matrix, i, 0)                                         
+            nb_rows = len(rep_matrix)
+          
+    patterns_list_curr_window_size = fetch_primitives(rep_matrix)                            # Fetch primitives
+    return patterns_list_curr_window_size
+
+
+def create_patterns_dict(all_reps_list):
+    nb_window_sizes = len(all_reps_list)
+    all_patterns = {}
+                    
+    for window_size in range(nb_window_sizes):
+        rep_matrix = all_reps_list[window_size]
+        all_patterns[f'{window_size}'] = patterns_curr_window_size(rep_matrix)
+        
+    return all_patterns
+
 
 # %% Great filters
 
 # 1) Keep longest pattern -> If window is included in bigger window, eliminate
 
-def reframe_window_from_pattern(all_patterns_dict, window_size, pattern_index):
+def reframe_window_from_pattern(all_patterns, window_size, pattern_index):
     # Returns the list of primitives forming a window
     true_window_size = window_size + 1
-    window_start = all_patterns_dict[f'{window_size}'][pattern_index][0]
+    window_start = all_patterns[f'{window_size}'][pattern_index][0]
     window = list(range(window_start, true_window_size + window_start))      
     return window
 
@@ -132,8 +184,7 @@ def compare_patterns(sim_mat, bp, sp) :
     return False
 
 
-
-def first_filter(all_patterns): 
+def first_filter(all_patterns, sim_mat): 
     all_patterns_temp = copy.deepcopy(all_patterns)    
     nb_window_sizes = len(all_patterns_temp)    
     for window_size_sp in range (nb_window_sizes - 1):
@@ -150,7 +201,7 @@ def first_filter(all_patterns):
                     true_window_size_bp = window_size_bp + 1
                     prim_in_sp = list(range(sp_start, true_window_size_sp + sp_start))                     # Create primitives list contained in small pattern window
                     prim_in_bp = list(range(bp_start, true_window_size_bp + bp_start))                     # Create primitives list contained in big pattern window                    
-                    if compare_patterns(prim_in_bp, prim_in_sp):                                           # If sp is included in bp, delete sp 
+                    if compare_patterns(sim_mat, prim_in_bp, prim_in_sp):                                           # If sp is included in bp, delete sp 
                         del all_patterns_temp[f'{window_size_sp}'][sp_index]
                         nb_sp = nb_sp - 1  
                         sp_index = sp_index - 1
@@ -202,18 +253,19 @@ def is_circular(arr1, arr2):
     return str1 in str2 + ' ' + str2
 
 
-def third_filter(all_patterns_dict):
+def third_filter(all_patterns):
     
-    for window_size in range (len(all_patterns_dict)):
-        nb_patterns = len(all_patterns_dict[f'{window_size}']) 
+    all_patterns_temp = copy.deepcopy(all_patterns)
+    for window_size in range (len(all_patterns_temp)):
+        nb_patterns = len(all_patterns_temp[f'{window_size}']) 
         p1_ind = 0
         
         while p1_ind < (nb_patterns - 1):
             p2_ind = p1_ind + 1
             
             while p2_ind < nb_patterns:
-                p1 = all_patterns_dict[f'{window_size}'][p1_ind]
-                p2 = all_patterns_dict[f'{window_size}'][p2_ind]
+                p1 = all_patterns_temp[f'{window_size}'][p1_ind]
+                p2 = all_patterns_temp[f'{window_size}'][p2_ind]
                 w1_start = p1[0]                                        # Create function for this part ? retrace_window(window_size, pattern index)
                 w2_start = p2[0]
               
@@ -226,14 +278,14 @@ def third_filter(all_patterns_dict):
                        
                 if is_circular(w1,w2):                                  # If windows are circularly indentical then delete the pattern with min nb of windows
                     if len(p1)<len(p2):
-                        del all_patterns_dict[f'{window_size}'][p1_ind]
+                        del all_patterns_temp[f'{window_size}'][p1_ind]
                         p1_ind = p1_ind - 1
                         nb_patterns = nb_patterns - 1
                     elif len(p1)>len(p2):
-                        del all_patterns_dict[f'{window_size}'][p2_ind]
+                        del all_patterns_temp[f'{window_size}'][p2_ind]
                         p2_ind = p2_ind - 1
                         nb_patterns = nb_patterns - 1
                 p2_ind = p2_ind + 1   
             p1_ind = p1_ind + 1                          
                 
-    return all_patterns_dict
+    return all_patterns_temp

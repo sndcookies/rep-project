@@ -27,9 +27,9 @@ def stationary(x0, y0, nb_pts = 20):
 
 # %% Line block
 
-def line_block(start, stop, nb_samples, a, b): 
+def line_block(a, b, initial_nb_pts = 50, end = 5): 
     
-    time = np.linspace(start, stop, nb_samples, True)  
+    time = np.linspace(0, end-1, end)  
     line_block = a * time + b
      
     return time, line_block

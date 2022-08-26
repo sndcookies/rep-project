@@ -9,8 +9,6 @@ import visu
 
 
 
-
-
 def smooth(y, box_pts):
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
@@ -20,6 +18,7 @@ def cat_traj(time, signal):
     return np.reshape(np.concatenate((time,signal)), (2, len(time)))
 
 def test_seg(time, signal, signal_title, seg_criteria, parameters):
+    
     visu.plot_synthetic(time, signal, signal_title, 1)
     traj = cat_traj(time, signal)
     [segments,seg_pts] = seg_traj.segmentation(traj, seg_criteria, parameters)  
@@ -29,9 +28,11 @@ def test_seg(time, signal, signal_title, seg_criteria, parameters):
    
     
 # %% Parameters
-criteria_thresh = 10
-stat_thresh = 5
-seg_criteria = 'fitting_error'   
+stat_thresh = 1
+criteria_thresh = 0.7
+neigh_thres = 5
+seg_criteria = 'improved_heading'
+
 
 # %% Triangle
 

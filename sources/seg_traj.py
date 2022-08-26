@@ -1,6 +1,17 @@
 import numpy as np
 import criteria
+import scipy.io
   
+
+def load_data_cube(cube_path, kp):
+    mat = scipy.io.loadmat(cube_path)
+    x = mat["data"][0,:,kp]
+    y = mat["data"][1,:,kp]
+    return x, y
+
+        
+# %% 
+
 def test_criteria(traj, start, end, attribute, parameters):                        
     # For given trajectory, start and end indices, creates a subtrajectory
     # For given attribute, tests if corresponding critera is satisfied on 
@@ -31,7 +42,7 @@ def test_criteria(traj, start, end, attribute, parameters):
 
     elif attribute == 'improved_heading':
         if start + parameters[1] < min(end, len(traj[0])- 1- parameters[1]):
-            for i in range(start+parameters[1], min(end,len(traj[0])-parameters[1])):
+            for i in range(start + parameters[1], min(end, len(traj[0]) - parameters[1])):
                 x1 = traj[0, i-parameters[1]:i]
                 y1 = traj[1, i-parameters[1]:i]
                 a1, b1, fitting_error = criteria.fitting_error(x1, y1)
