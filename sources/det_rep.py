@@ -130,8 +130,10 @@ def patterns_curr_window_size(rep_matrix):
     i = 0
     while i < nb_rows :                                                                      # Loop through i rows
         curr_row = np.array(rep_matrix[i])       
-                                                                      
+        #print('curr_row', curr_row)  
+        #print('sum', np.sum(curr_row > 0))                                                            
         if np.sum(curr_row > 0) > 1 :                                                        # If i row is not empty or composed of a single occurence, process :          
+            #print('keep')
             j = i + 1
             while j < nb_rows :                                                              # Loop through j rows
                 if not (np.mean(abs(rep_matrix[j] - rep_matrix[i]))):                        # If i row and j row contain the same pattern
@@ -142,6 +144,7 @@ def patterns_curr_window_size(rep_matrix):
             i = i + 1
         
         else :                                                                               # Else delete row 
+            #print('delete')
             rep_matrix = np.delete(rep_matrix, i, 0)                                         
             nb_rows = len(rep_matrix)
           
@@ -174,7 +177,7 @@ def reframe_window_from_pattern(all_patterns, window_size, pattern_index):
 
 def compare_patterns(sim_mat, bp, sp) :                                                             
     # Compares 2 lists of primitives, to see if small window is included in bigger window   
-    for i in range(len(bp)-len(sp)) :    
+    for i in range(len(bp)-len(sp) + 1) :                                                                # IL FAUT RAJOUTER +1 !!!!!!!! 
         if sim_mat[bp[i]][sp[0]]:
             j = 0
             while j < len(sp) and sim_mat[bp[i+j]][sp[j]] :
@@ -201,6 +204,10 @@ def first_filter(all_patterns, sim_mat):
                     true_window_size_bp = window_size_bp + 1
                     prim_in_sp = list(range(sp_start, true_window_size_sp + sp_start))                     # Create primitives list contained in small pattern window
                     prim_in_bp = list(range(bp_start, true_window_size_bp + bp_start))                     # Create primitives list contained in big pattern window                    
+                    
+                    '''print('window_size_sp', window_size_sp, 'prim_in_sp',prim_in_sp)
+                    print('window_size_bp', window_size_bp, 'prim_in_bp',prim_in_bp)
+                    print('include ?', compare_patterns(sim_mat, prim_in_bp, prim_in_sp))'''
                     if compare_patterns(sim_mat, prim_in_bp, prim_in_sp):                                           # If sp is included in bp, delete sp 
                         del all_patterns_temp[f'{window_size_sp}'][sp_index]
                         nb_sp = nb_sp - 1  
@@ -209,6 +216,10 @@ def first_filter(all_patterns, sim_mat):
                         break;
                 if found_bigger :
                     break;
+                    '''
+                else :
+                    print('window_size_sp', window_size_sp, 'prim_in_sp',prim_in_sp)
+                    print('window_size_bp', window_size_bp, 'prim_in_bp',prim_in_bp) '''       
             sp_index = sp_index + 1                                  
     return all_patterns_temp
 
@@ -258,34 +269,38 @@ def third_filter(all_patterns):
     all_patterns_temp = copy.deepcopy(all_patterns)
     for window_size in range (len(all_patterns_temp)):
         nb_patterns = len(all_patterns_temp[f'{window_size}']) 
-        p1_ind = 0
         
-        while p1_ind < (nb_patterns - 1):
-            p2_ind = p1_ind + 1
+        if nb_patterns :                                                       # debug
+            p1_ind = 0
             
-            while p2_ind < nb_patterns:
-                p1 = all_patterns_temp[f'{window_size}'][p1_ind]
-                p2 = all_patterns_temp[f'{window_size}'][p2_ind]
-                w1_start = p1[0]                                        # Create function for this part ? retrace_window(window_size, pattern index)
-                w2_start = p2[0]
-              
-                true_window_size = window_size + 1
-                w1 = list(range(w1_start, true_window_size + w1_start))
-                w2 = list(range(w2_start, true_window_size + w2_start))
+            while p1_ind < (nb_patterns - 1):
+                p2_ind = p1_ind + 1
                 
-                w1 = [(s - w1[0]) % true_window_size for s in w1]
-                w2 = [(s - w1[0]) % true_window_size for s in w2]
-                       
-                if is_circular(w1,w2):                                  # If windows are circularly indentical then delete the pattern with min nb of windows
-                    if len(p1)<len(p2):
-                        del all_patterns_temp[f'{window_size}'][p1_ind]
-                        p1_ind = p1_ind - 1
-                        nb_patterns = nb_patterns - 1
-                    elif len(p1)>len(p2):
-                        del all_patterns_temp[f'{window_size}'][p2_ind]
-                        p2_ind = p2_ind - 1
-                        nb_patterns = nb_patterns - 1
-                p2_ind = p2_ind + 1   
-            p1_ind = p1_ind + 1                          
+                while p2_ind < nb_patterns:
+                    #print('p1_ind', p1_ind)
+                    #print('p1', all_patterns_temp[f'{window_size}'][p1_ind])
+                    p1 = all_patterns_temp[f'{window_size}'][p1_ind]
+                    p2 = all_patterns_temp[f'{window_size}'][p2_ind]
+                    w1_start = p1[0]                                        # Create function for this part ? retrace_window(window_size, pattern index)
+                    w2_start = p2[0]
+                  
+                    true_window_size = window_size + 1
+                    w1 = list(range(w1_start, true_window_size + w1_start))
+                    w2 = list(range(w2_start, true_window_size + w2_start))
+                    
+                    w1 = [(s - w1[0]) % true_window_size for s in w1]
+                    w2 = [(s - w1[0]) % true_window_size for s in w2]
+                           
+                    if is_circular(w1,w2):                                  # If windows are circularly indentical then delete the pattern with min nb of windows
+                        if len(p1)<len(p2):
+                            del all_patterns_temp[f'{window_size}'][p1_ind]
+                            p1_ind = p1_ind - 1
+                            nb_patterns = nb_patterns - 1
+                        elif len(p1)>len(p2):
+                            del all_patterns_temp[f'{window_size}'][p2_ind]
+                            p2_ind = p2_ind - 1
+                            nb_patterns = nb_patterns - 1
+                    p2_ind = p2_ind + 1   
+                p1_ind = p1_ind + 1                          
                 
     return all_patterns_temp
